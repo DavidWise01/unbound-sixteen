@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>the unbound sixteen · cardinal × colour × phase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0b0c11;--panel:#13151c;--line:#ffffff14;--text:#e9e9f0;--dim:#8b8ba0;--gold:#ffd27a;
+        --blue:#4f7cff;--red:#ff4d6a;--void:#b7aee6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--text);font-family:'Space Mono',monospace;
+    background-image:radial-gradient(circle at 50% 0%, #181a24 0%, #0d0e14 55%, #08080d 100%);
+    min-height:100vh;padding:36px 22px 70px}
+  .wrap{max-width:760px;margin:0 auto}
+  .eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:12px}
+  h1{font-family:'Fraunces',serif;font-weight:500;font-size:clamp(23px,4.4vw,34px);line-height:1.16;text-align:center;letter-spacing:-.01em}
+  h1 .b{color:var(--blue)} h1 .r{color:var(--red)}
+  .sub{text-align:center;color:var(--dim);font-size:13px;margin:14px auto 4px;max-width:560px;line-height:1.6}
+  .sub b{color:var(--void)}
+  .axes{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 26px;font-size:11px}
+  .axis{border:1px solid var(--line);border-radius:7px;padding:7px 12px;color:var(--dim)}
+  .axis b{color:var(--text)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .cell{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:14px 8px 10px;text-align:center}
+  .cell svg{display:block;margin:0 auto 8px}
+  .code{font-size:12px;letter-spacing:.14em;color:var(--text)}
+  .lab{font-size:9.5px;color:var(--dim);margin-top:3px;letter-spacing:.04em}
+  .foot{margin-top:30px;border-top:1px solid var(--line);padding-top:20px;font-size:12px;line-height:1.7;color:var(--dim)}
+  .foot b{color:var(--void)} .foot .gold{color:var(--gold)}
+  .colhdr{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:8px}
+  .colhdr div{text-align:center;font-size:10px;color:var(--dim);letter-spacing:.08em}
+  @media(max-width:560px){.grid,.colhdr{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">the tesseract, painted · Q₄ · 2⁴</div>
+  <h1>The unbound sixteen<br><span class="b">colour</span> and <span class="r">phase</span> set free from the cardinals</h1>
+  <p class="sub">Three axes, each its own bit, none folded into another: <b>cardinal</b> (which way), <b>colour</b> (blue / red), <b>phase</b> (solid / hollow). Bind any two and it collapses — 16 → 8 → 4 → 2. Held apart, it is the full 4-cube.</p>
+  <div class="axes">
+    <div class="axis"><b>cardinal</b> · U D L R · 4</div>
+    <div class="axis"><b>colour</b> · blue red · 2</div>
+    <div class="axis"><b>phase</b> · solid hollow · 2</div>
+  </div>
+  <div class="colhdr"><div>blue · solid</div><div>blue · hollow</div><div>red · solid</div><div>red · hollow</div></div>
+  <div class="grid" id="grid"></div>
+  <div class="foot">
+    <p><span class="gold">what this is, honestly:</span> not a new object. Sixteen symbols as <b>4 sides × 2 colours</b> is a <b>Wang tile set</b> (Wang, 1961; Ammann's classic set is exactly 16), and the structure underneath is the <b>16 vertices of the tesseract Q₄</b> — the 4-bit strings, each axis one bit. The cardinal/colour/phase reading is your labelling; the maths is standard. Each glyph's code below is its hypercube address: <b>cardinal(2) · colour(1) · phase(1)</b>.</p>
+    <p style="margin-top:10px"><span class="gold">why phase is solid/hollow, not a flip:</span> "inverted" as a literal vertical flip <b>is</b> the U↔D swap — already two of the cardinals. Used as phase it re-binds and the count falls back toward 2. Realising phase as an attribute the rotation can't reach (solid vs hollow) is the one move that keeps the fourth bit free. That, not the count, is the whole content of "unbind."</p>
+  </div>
+</div>
+<script>
+"use strict";
+const card = [["U",0,0,"M30 8 L30 50 M30 8 L20 20 M30 8 L40 20"],
+              ["D",0,1,"M30 52 L30 10 M30 52 L20 40 M30 52 L40 40"],
+              ["L",1,0,"M8 30 L50 30 M8 30 L20 20 M8 30 L20 40"],
+              ["R",1,1,"M52 30 L10 30 M52 30 L40 20 M52 30 L40 40"]];
+const colors = [["blue", getComputedStyle(document.documentElement).getPropertyValue('--blue').trim(), 0],
+                ["red",  getComputedStyle(document.documentElement).getPropertyValue('--red').trim(), 1]];
+const phases = [["solid",0],["hollow",1]];
+const grid = document.getElementById("grid");
+// order: row = cardinal, col = (colour,phase) = blue-solid, blue-hollow, red-solid, red-hollow
+for (const [cn,chi,clo,path] of card){
+  for (const [coln,col,cbit] of colors){
+    for (const [pn,pbit] of phases){
+      const solid = (pn==="solid");
+      const stroke = col, fill = solid ? col : "none", sw = solid ? 0 : 3.2;
+      const code = `${chi}${clo}${cbit}${pbit}`;
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      cell.innerHTML =
+        `<svg width="60" height="60" viewBox="0 0 60 60">
+           <path d="${path}" fill="none" stroke="${stroke}" stroke-width="${solid?6.5:3.2}"
+                 stroke-linecap="round" stroke-linejoin="round" opacity="${solid?1:0.95}"
+                 ${solid?'':'stroke-dasharray="0.1 0"'} />
+           ${solid?'':`<circle cx="30" cy="30" r="3" fill="none" stroke="${stroke}" stroke-width="2"/>`}
+         </svg>
+         <div class="code">${code}</div>
+         <div class="lab">${cn} · ${coln} · ${pn}</div>`;
+      grid.appendChild(cell);
+    }
+  }
+}
+</script>
+</body>
+</html>
